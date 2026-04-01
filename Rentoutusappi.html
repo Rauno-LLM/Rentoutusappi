@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calm Flow</title>
+  <style>
+    :root {
+      --bg1: #091540;
+      --bg2: #1b4965;
+      --bg3: #62b6cb;
+      --glass: rgba(255,255,255,0.12);
+      --glass-strong: rgba(255,255,255,0.18);
+      --text: #f4fbff;
+      --muted: rgba(244,251,255,0.78);
+      --accent: #b8f2e6;
+      --shadow: rgba(0,0,0,0.25);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      height: 100%;
+      font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+      color: var(--text);
+      overflow: hidden;
+      background: linear-gradient(-45deg, var(--bg1), var(--bg2), #0b3c5d, var(--bg3));
+      background-size: 400% 400%;
+      animation: gradientShift 18s ease infinite;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    #bgCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      opacity: 0.9;
+    }
+
+    .app {
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+    }
+
+    .panel {
+      width: min(760px, 100%);
+      background: linear-gradient(180deg, var(--glass-strong), var(--glass));
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 28px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 24px 80px var(--shadow);
+      padding: 28px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #ffffff, #b8f2e6 35%, #5fa8d3 70%, transparent 71%);
+      box-shadow: 0 0 24px rgba(184,242,230,0.45);
+      flex: 0 0 auto;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      letter-spacing: 0.02em;
+    }
+
+    .subtitle {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .status {
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.1);
+      color: var(--muted);
+      font-size: 0.92rem;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .quote-card {
+      margin-top: 18px;
+      padding: 28px;
+      border-radius: 24px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      min-height: 190px;
+      display: grid;
+      align-items: center;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+    }
+
+    .quote-mark {
+      font-size: 3.2rem;
+      line-height: 1;
+      color: rgba(255,255,255,0.35);
+      margin-bottom: 8px;
+    }
+
+    .quote {
+      font-size: clamp(1.35rem, 3vw, 2rem);
+      line-height: 1.45;
+      margin: 0 0 12px;
+      text-wrap: balance;
+    }
+
+    .author {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.98rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-top: 22px;
+    }
+
+    .control-box {
+      padding: 18px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    button, select, input[type="range"] {
+      appearance: none;
+      border: none;
+      outline: none;
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+      padding: 12px 16px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.14);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.12);
+      transition: transform 0.15s ease, background 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      background: rgba(255,255,255,0.2);
+    }
+
+    button.primary {
+      background: linear-gradient(135deg, rgba(184,242,230,0.32), rgba(95,168,211,0.28));
+      border-color: rgba(255,255,255,0.2);
+    }
+
+    select {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.14);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    select option {
+      color: #111;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.16);
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: white;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    }
+
+    .footer {
+      margin-top: 18px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .pulse {
+      position: absolute;
+      inset: auto auto 8% 50%;
+      width: 220px;
+      height: 220px;
+      transform: translateX(-50%);
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(184,242,230,0.18), rgba(184,242,230,0.04) 50%, transparent 70%);
+      filter: blur(6px);
+      animation: pulse 6s ease-in-out infinite;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: translateX(-50%) scale(0.95); opacity: 0.65; }
+      50% { transform: translateX(-50%) scale(1.15); opacity: 1; }
+    }
+
+    @media (max-width: 760px) {
+      .panel { padding: 20px; }
+      .controls { grid-template-columns: 1fr; }
+      .quote-card { min-height: 220px; padding: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="bgCanvas"></canvas>
+  <div class="pulse"></div>
+
+  <main class="app">
+    <section class="panel">
+      <div class="topbar">
+        <div class="brand">
+          <div class="logo"></div>
+          <div>
+            <h1>Calm Flow</h1>
+            <p class="subtitle">Ambient visuals, gentle sound, and relaxing thoughts.</p>
+          </div>
+        </div>
+        <div class="status" id="statusText">Sound is off</div>
+      </div>
+
+      <section class="quote-card">
+        <div>
+          <div class="quote-mark">“</div>
+          <p class="quote" id="quoteText"></p>
+          <p class="author" id="quoteAuthor"></p>
+        </div>
+      </section>
+
+      <section class="controls">
+        <div class="control-box">
+          <div class="label-row">
+            <span>Audio</span>
+            <span id="soundModeLabel">Ocean Dream</span>
+          </div>
+          <div class="button-row">
+            <button class="primary" id="toggleAudioBtn">Play sound</button>
+            <button id="nextQuoteBtn">Next quote</button>
+          </div>
+          <div style="margin-top: 14px;">
+            <select id="soundModeSelect" aria-label="Select sound mode">
+              <option value="ocean">Ocean Dream</option>
+              <option value="rain">Soft Rain</option>
+              <option value="night">Night Breeze</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="control-box">
+          <div class="label-row">
+            <span>Volume</span>
+            <span id="volumeLabel">40%</span>
+          </div>
+          <input id="volumeSlider" type="range" min="0" max="100" value="40" />
+          <div class="label-row" style="margin-top: 14px; margin-bottom: 0;">
+            <span>Auto quote change</span>
+            <span>Every 12 sec</span>
+          </div>
+        </div>
+      </section>
+
+      <div class="footer">
+        Save this as a single HTML file and open it in any browser, or publish it with GitHub Pages.
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const quotes = [
+      { text: "You do not have to solve everything today. Breathing is enough for this moment.", author: "Calm Flow" },
+      { text: "Peace is not something far away. Sometimes it begins with one slower breath.", author: "Calm Flow" },
+      { text: "Let your shoulders fall. The world can wait a minute.", author: "Calm Flow" },
+      { text: "Rest is not wasted time. It is how the mind returns to clarity.", author: "Calm Flow" },
+      { text: "Like water finding its level, you are allowed to settle gently.", author: "Calm Flow" },
+      { text: "Quiet is not empty. It is full of room to recover.", author: "Calm Flow" },
+      { text: "Ease back into yourself. There is nothing to prove right now.", author: "Calm Flow" },
+      { text: "A calm mind does not rush. It listens, softens, and begins again.", author: "Calm Flow" }
+    ];
+
+    const quoteText = document.getElementById('quoteText');
+    const quoteAuthor = document.getElementById('quoteAuthor');
+    const nextQuoteBtn = document.getElementById('nextQuoteBtn');
+    const toggleAudioBtn = document.getElementById('toggleAudioBtn');
+    const soundModeSelect = document.getElementById('soundModeSelect');
+    const soundModeLabel = document.getElementById('soundModeLabel');
+    const volumeSlider = document.getElementById('volumeSlider');
+    const volumeLabel = document.getElementById('volumeLabel');
+    const statusText = document.getElementById('statusText');
+
+    let quoteIndex = Math.floor(Math.random() * quotes.length);
+    let quoteTimer = null;
+
+    function showQuote(index) {
+      const q = quotes[index];
+      quoteText.style.opacity = 0;
+      quoteAuthor.style.opacity = 0;
+      setTimeout(() => {
+        quoteText.textContent = q.text;
+        quoteAuthor.textContent = q.author;
+        quoteText.style.opacity = 1;
+        quoteAuthor.style.opacity = 1;
+      }, 180);
+    }
+
+    function nextQuote() {
+      quoteIndex = (quoteIndex + 1) % quotes.length;
+      showQuote(quoteIndex);
+    }
+
+    showQuote(quoteIndex);
+    nextQuoteBtn.addEventListener('click', nextQuote);
+    quoteTimer = setInterval(nextQuote, 12000);
+
+    // Ambient audio engine using Web Audio API.
+    let audioCtx = null;
+    let masterGain = null;
+    let soundOn = false;
+    let currentNodes = [];
+
+    function randomBetween(min, max) {
+      return Math.random() * (max - min) + min;
+    }
+
+    function stopCurrentNodes() {
+      currentNodes.forEach(node => {
+        try {
+          if (node.stop) node.stop();
+        } catch (e) {}
+        try {
+          if (node.disconnect) node.disconnect();
+        } catch (e) {}
+      });
+      currentNodes = [];
+    }
+
+    function createNoiseBuffer(ctx, seconds = 2) {
+      const sampleRate = ctx.sampleRate;
+      const buffer = ctx.createBuffer(1, sampleRate * seconds, sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < data.length; i++) {
+        data[i] = Math.random() * 2 - 1;
+      }
+      return buffer;
+    }
+
+    function addNode(node) {
+      currentNodes.push(node);
+      return node;
+    }
+
+    function buildOcean(ctx) {
+      const noise = addNode(ctx.createBufferSource());
+      noise.buffer = createNoiseBuffer(ctx, 3);
+      noise.loop = true;
+
+      const filter = addNode(ctx.createBiquadFilter());
+      filter.type = 'lowpass';
+      filter.frequency.value = 550;
+      filter.Q.value = 0.4;
+
+      const swell = addNode(ctx.createGain());
+      swell.gain.value = 0.08;
+
+      const lfo = addNode(ctx.createOscillator());
+      const lfoGain = addNode(ctx.createGain());
+      lfo.type = 'sine';
+      lfo.frequency.value = 0.11;
+      lfoGain.gain.value = 0.03;
+      lfo.connect(lfoGain).connect(swell.gain);
+
+      const toneA = addNode(ctx.createOscillator());
+      const toneAGain = addNode(ctx.createGain());
+      toneA.type = 'sine';
+      toneA.frequency.value = 196;
+      toneAGain.gain.value = 0.02;
+
+      const toneB = addNode(ctx.createOscillator());
+      const toneBGain = addNode(ctx.createGain());
+      toneB.type = 'triangle';
+      toneB.frequency.value = 293.66;
+      toneBGain.gain.value = 0.012;
+
+      noise.connect(filter).connect(swell).connect(masterGain);
+      toneA.connect(toneAGain).connect(masterGain);
+      toneB.connect(toneBGain).connect(masterGain);
+
+      noise.start();
+      lfo.start();
+      toneA.start();
+      toneB.start();
+    }
+
+    function buildRain(ctx) {
+      const noise = addNode(ctx.createBufferSource());
+      noise.buffer = createNoiseBuffer(ctx, 2);
+      noise.loop = true;
+
+      const hp = addNode(ctx.createBiquadFilter());
+      hp.type = 'highpass';
+      hp.frequency.value = 1200;
+
+      const lp = addNode(ctx.createBiquadFilter());
+      lp.type = 'lowpass';
+      lp.frequency.value = 4200;
+
+      const rainGain = addNode(ctx.createGain());
+      rainGain.gain.value = 0.035;
+
+      const pad = addNode(ctx.createOscillator());
+      const padGain = addNode(ctx.createGain());
+      pad.type = 'sine';
+      pad.frequency.value = 174.61;
+      padGain.gain.value = 0.018;
+
+      const wobble = addNode(ctx.createOscillator());
+      const wobbleGain = addNode(ctx.createGain());
+      wobble.type = 'sine';
+      wobble.frequency.value = 0.07;
+      wobbleGain.gain.value = 20;
+      wobble.connect(wobbleGain).connect(pad.frequency);
+
+      noise.connect(hp).connect(lp).connect(rainGain).connect(masterGain);
+      pad.connect(padGain).connect(masterGain);
+
+      noise.start();
+      pad.start();
+      wobble.start();
+    }
+
+    function buildNight(ctx) {
+      const base = addNode(ctx.createOscillator());
+      const baseGain = addNode(ctx.createGain());
+      base.type = 'triangle';
+      base.frequency.value = 146.83;
+      baseGain.gain.value = 0.025;
+
+      const air = addNode(ctx.createBufferSource());
+      air.buffer = createNoiseBuffer(ctx, 3);
+      air.loop = true;
+
+      const airFilter = addNode(ctx.createBiquadFilter());
+      airFilter.type = 'bandpass';
+      airFilter.frequency.value = 900;
+      airFilter.Q.value = 0.7;
+
+      const airGain = addNode(ctx.createGain());
+      airGain.gain.value = 0.018;
+
+      const shimmer = addNode(ctx.createOscillator());
+      const shimmerGain = addNode(ctx.createGain());
+      shimmer.type = 'sine';
+      shimmer.frequency.value = 440;
+      shimmerGain.gain.value = 0.004;
+
+      const shimmerLfo = addNode(ctx.createOscillator());
+      const shimmerLfoGain = addNode(ctx.createGain());
+      shimmerLfo.type = 'sine';
+      shimmerLfo.frequency.value = 0.13;
+      shimmerLfoGain.gain.value = 0.0035;
+      shimmerLfo.connect(shimmerLfoGain).connect(shimmerGain.gain);
+
+      base.connect(baseGain).connect(masterGain);
+      air.connect(airFilter).connect(airGain).connect(masterGain);
+      shimmer.connect(shimmerGain).connect(masterGain);
+
+      base.start();
+      air.start();
+      shimmer.start();
+      shimmerLfo.start();
+    }
+
+    async function ensureAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        masterGain = audioCtx.createGain();
+        masterGain.gain.value = Number(volumeSlider.value) / 100;
+        masterGain.connect(audioCtx.destination);
+      }
+      if (audioCtx.state === 'suspended') {
+        await audioCtx.resume();
+      }
+    }
+
+    function buildCurrentMode() {
+      if (!audioCtx) return;
+      stopCurrentNodes();
+      const mode = soundModeSelect.value;
+      soundModeLabel.textContent = soundModeSelect.options[soundModeSelect.selectedIndex].text;
+
+      if (mode === 'ocean') buildOcean(audioCtx);
+      if (mode === 'rain') buildRain(audioCtx);
+      if (mode === 'night') buildNight(audioCtx);
+    }
+
+    async function toggleAudio() {
+      await ensureAudio();
+      soundOn = !soundOn;
+
+      if (soundOn) {
+        buildCurrentMode();
+        toggleAudioBtn.textContent = 'Pause sound';
+        statusText.textContent = 'Sound is playing';
+      } else {
+        stopCurrentNodes();
+        toggleAudioBtn.textContent = 'Play sound';
+        statusText.textContent = 'Sound is off';
+      }
+    }
+
+    toggleAudioBtn.addEventListener('click', toggleAudio);
+
+    soundModeSelect.addEventListener('change', () => {
+      soundModeLabel.textContent = soundModeSelect.options[soundModeSelect.selectedIndex].text;
+      if (soundOn) buildCurrentMode();
+    });
+
+    volumeSlider.addEventListener('input', () => {
+      volumeLabel.textContent = `${volumeSlider.value}%`;
+      if (masterGain) masterGain.gain.value = Number(volumeSlider.value) / 100;
+    });
+
+    // Animated background particles.
+    const canvas = document.getElementById('bgCanvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      particles = Array.from({ length: Math.min(80, Math.floor(window.innerWidth / 18)) }, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: randomBetween(1.2, 3.8),
+        dx: randomBetween(-0.18, 0.18),
+        dy: randomBetween(-0.12, 0.12),
+        a: randomBetween(0.18, 0.5)
+      }));
+    }
+
+    function drawBackground() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const grad = ctx.createRadialGradient(
+        canvas.width * 0.5, canvas.height * 0.55, 80,
+        canvas.width * 0.5, canvas.height * 0.55, Math.max(canvas.width, canvas.height) * 0.6
+      );
+      grad.addColorStop(0, 'rgba(255,255,255,0.06)');
+      grad.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      for (const p of particles) {
+        p.x += p.dx;
+        p.y += p.dy;
+
+        if (p.x < -10) p.x = canvas.width + 10;
+        if (p.x > canvas.width + 10) p.x = -10;
+        if (p.y < -10) p.y = canvas.height + 10;
+        if (p.y > canvas.height + 10) p.y = -10;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,255,255,${p.a})`;
+        ctx.fill();
+      }
+
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const a = particles[i];
+          const b = particles[j];
+          const dx = a.x - b.x;
+          const dy = a.y - b.y;
+          const dist = Math.hypot(dx, dy);
+          if (dist < 140) {
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.strokeStyle = `rgba(255,255,255,${0.08 * (1 - dist / 140)})`;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          }
+        }
+      }
+
+      requestAnimationFrame(drawBackground);
+    }
+
+    resizeCanvas();
+    drawBackground();
+    window.addEventListener('resize', resizeCanvas);
+  </script>
+</body>
+</html>
